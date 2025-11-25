@@ -54,7 +54,7 @@ if st.button("Find Restaurants"):
     else:
         try:
             # Create the model
-            model = genai.GenerativeModel('gemini-1.5-flash')
+            model = genai.GenerativeModel('gemini-2.5-pro')
             
             # Create the prompt based on your filters
             prompt = f"""
@@ -80,5 +80,6 @@ if st.button("Find Restaurants"):
             
         except Exception as e:
             st.error(f"An error occurred: {e}")
+
 
 
