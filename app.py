@@ -65,7 +65,7 @@ if st.button("Find Top Recommendations"):
         try:
             # FIXED: 'gemini-2.5-pro' does not exist yet. 
             # We use 'gemini-1.5-flash' for speed or 'gemini-1.5-pro' for better reasoning.
-            model = genai.GenerativeModel('gemini-1.5-flash')
+            model = genai.GenerativeModel('gemini-2.5-pro')
             
             # IMPROVED PROMPT:
             # 1. Strict Geofencing to stop showing Orchard results for Tampines searches.
@@ -104,5 +104,6 @@ if st.button("Find Top Recommendations"):
             
         except Exception as e:
             st.error(f"An error occurred. Check your API Key or Connection. Error: {e}")
+
 
 
