@@ -55,7 +55,7 @@ with col2:
     )
 
 # 5. INPUT: Location
-location = st.text_input("Where are you looking?", placeholder="e.g. Tampines, Orchard, Shibuya, NYC...")
+location = st.text_input("Where are you looking?", placeholder="e.g. Tampines, Orchard, Shanghai, Tokyo ...")
 
 # 6. LOGIC: The Search Button
 if st.button("Find Top Recommendations"):
@@ -104,6 +104,7 @@ if st.button("Find Top Recommendations"):
             
         except Exception as e:
             st.error(f"An error occurred. Check your API Key or Connection. Error: {e}")
+
 
 
 
