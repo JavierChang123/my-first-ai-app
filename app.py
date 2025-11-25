@@ -9,9 +9,9 @@ except Exception as e:
     st.error("API Key not found. Please set it in Streamlit Secrets.")
 
 # 2. UI: Page Configuration
-st.set_page_config(page_title="Cuisine Finder", page_icon="🍽️")
+st.set_page_config(page_title="Cuisine Finder", page_icon="🍽️", layout="wide")
 
-# Custom CSS to make it look nicer (like your React code)
+# Custom CSS
 st.markdown("""
     <style>
     .stButton>button {
@@ -20,6 +20,14 @@ st.markdown("""
         border-radius: 20px;
         width: 100%;
     }
+    a {
+        text-decoration: none;
+        color: #E63946 !important;
+        font-weight: bold;
+    }
+    a:hover {
+        text-decoration: underline;
+    }
     </style>
     """, unsafe_allow_html=True)
 
@@ -27,7 +35,7 @@ st.markdown("""
 st.title("🍽️ Find the Best Cuisine")
 st.markdown("Enter a city or neighborhood to discover top-rated restaurants, filtered by your budget.")
 
-# 4. FILTERS (Cuisine and Budget)
+# 4. FILTERS
 col1, col2 = st.columns(2)
 
 with col1:
@@ -45,33 +53,39 @@ with col2:
     )
 
 # 5. INPUT: Location
-location = st.text_input("Where are you looking?", placeholder="e.g. Tampines, Orchard, North Korea, Iran...")
+location = st.text_input("Where are you looking?", placeholder="e.g. Tampines, Orchard, Zhuhai...")
 
 # 6. LOGIC: The Search Button
-if st.button("Find Restaurants"):
+if st.button("Find Top 20 Restaurants"):
     if not location:
         st.warning("Please enter a location first.")
     else:
         try:
-            # Create the model
+            # FIXED: Changed from 'gemini-2.5-pro' (invalid) to 'gemini-1.5-flash'
             model = genai.GenerativeModel('gemini-2.5-pro')
             
-            # Create the prompt based on your filters
+            # UPDATED PROMPT: 
+            # 1. Asks for 20 results
+            # 2. Asks for Google Search Links
             prompt = f"""
             I am looking for {cuisine} restaurants in {location}.
             My budget is: {budget}.
             
-            Please provide a list of the top 5 highly-rated options. 
+            Please provide a list of the TOP 20 highly-rated options. 
+            
+            IMPORTANT: For every restaurant name, format it as a clickable Markdown link that searches Google for that restaurant in that city. 
+            Example format: [Restaurant Name](https://www.google.com/search?q=Restaurant+Name+{location})
+            
             For each restaurant include:
-            1. Name
+            1. The Name (as a clickable link)
             2. Estimated Price
             3. Why it's good (short description)
             4. A specific recommended dish.
             
-            Format the response nicely in Markdown.
+            Format the response nicely in Markdown. Use a table if possible for better readability.
             """
             
-            with st.spinner(f"Consulting the culinary maps for {cuisine} spots in {location}..."):
+            with st.spinner(f"Finding top 20 {cuisine} spots in {location}... this might take a moment..."):
                 response = model.generate_content(prompt)
                 
             # Show results
@@ -80,7 +94,6 @@ if st.button("Find Restaurants"):
             
         except Exception as e:
             st.error(f"An error occurred: {e}")
-
 
 
 
