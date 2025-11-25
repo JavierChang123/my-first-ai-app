@@ -45,7 +45,7 @@ with col2:
     )
 
 # 5. INPUT: Location
-location = st.text_input("Where are you looking?", placeholder="e.g. San Francisco, Singapore, Zhuhai...")
+location = st.text_input("Where are you looking?", placeholder="e.g. Tampines, Orchard, North Korea, Iran...")
 
 # 6. LOGIC: The Search Button
 if st.button("Find Restaurants"):
@@ -80,6 +80,7 @@ if st.button("Find Restaurants"):
             
         except Exception as e:
             st.error(f"An error occurred: {e}")
+
 
 
 
