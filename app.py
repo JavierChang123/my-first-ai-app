@@ -19,82 +19,90 @@ st.markdown("""
         color: white;
         border-radius: 20px;
         width: 100%;
+        font-weight: bold;
     }
+    /* Style for the links in the table */
     a {
         text-decoration: none;
-        color: #E63946 !important;
+        color: #1E88E5 !important; 
         font-weight: bold;
     }
     a:hover {
         text-decoration: underline;
+        color: #0D47A1 !important;
     }
     </style>
     """, unsafe_allow_html=True)
 
 # 3. APP HEADER
-st.title("🍽️ Find the Best Cuisine")
-st.markdown("Enter a city or neighborhood to discover top-rated restaurants, filtered by your budget.")
+st.title("🍽️ Global Food Hunter")
+st.markdown("Search for specific dishes (e.g., **Laksa, Burgers, Sushi**) or Cuisines in any neighborhood.")
 
 # 4. FILTERS
 col1, col2 = st.columns(2)
 
 with col1:
-    cuisine = st.selectbox(
-        "Select Cuisine",
-        ['Chinese', 'Italian', 'Japanese', 'Korean', 'Mexican', 
-         'Western', 'Thai', 'Indian', 'Malay', 'Spanish', 
-         'French', 'Vietnamese', 'Taiwanese', 'Turkish']
+    # CHANGED: Replaced Selectbox with Text Input for flexibility
+    food_search = st.text_input(
+        "What are you craving?", 
+        placeholder="e.g. Japanese, Burgers, Laksa, Dim Sum..."
     )
 
 with col2:
     budget = st.select_slider(
         "Select Budget",
-        options=['Any', '$', '$$', '$$$', '$$$$']
+        options=['Any', '$ (Cheap)', '$$ (Moderate)', '$$$ (Expensive)', '$$$$ (Luxury)']
     )
 
 # 5. INPUT: Location
-location = st.text_input("Where are you looking?", placeholder="e.g. Tampines, Orchard, Iran...")
+location = st.text_input("Where are you looking?", placeholder="e.g. Tampines, Orchard, Shibuya, NYC...")
 
 # 6. LOGIC: The Search Button
-if st.button("Find Top 20 Restaurants"):
-    if not location:
-        st.warning("Please enter a location first.")
+if st.button("Find Top Recommendations"):
+    if not location or not food_search:
+        st.warning("Please enter both a food type and a location.")
     else:
         try:
-            # FIXED: Changed from 'gemini-2.5-pro' (invalid) to 'gemini-1.5-flash'
-            model = genai.GenerativeModel('gemini-2.5-pro')
+            # FIXED: 'gemini-2.5-pro' does not exist yet. 
+            # We use 'gemini-1.5-flash' for speed or 'gemini-1.5-pro' for better reasoning.
+            model = genai.GenerativeModel('gemini-1.5-flash')
             
-            # UPDATED PROMPT: 
-            # 1. Asks for 20 results
-            # 2. Asks for Google Search Links
+            # IMPROVED PROMPT:
+            # 1. Strict Geofencing to stop showing Orchard results for Tampines searches.
+            # 2. Dynamic food insertion.
             prompt = f"""
-            I am looking for {cuisine} restaurants in {location}.
-            My budget is: {budget}.
+            Act as a local food expert.
+            I am looking for: "{food_search}" 
+            Location: "{location}"
+            Budget Level: "{budget}"
             
-            Please provide a list of the TOP 20 highly-rated options. 
+            Task:
+            List the TOP 20 highest-rated places that fit these criteria.
             
-            IMPORTANT: For every restaurant name, format it as a clickable Markdown link that searches Google for that restaurant in that city. 
-            Example format: [Restaurant Name](https://www.google.com/search?q=Restaurant+Name+{location})
+            CRITICAL RULES:
+            1. GEOGRAPHY: The restaurants MUST be physically located INSIDE or immediately adjacent to "{location}". Do NOT suggest places in the city center if the user asked for a specific suburb (e.g., if user asks for Tampines, DO NOT show Orchard Road restaurants).
+            2. QUANTITY: Try to find 20. If there are not 20 valid high-rated places strictly in {location}, list as many as possible (e.g., Top 10) rather than inventing fake ones or showing places far away.
+            3. LINKING: Format the Name as a Markdown Link that searches Google.
+               Format: [Restaurant Name](https://www.google.com/search?q=Restaurant+Name+{location}+Food)
             
-            For each restaurant include:
-            1. The Name (as a clickable link)
-            2. Estimated Price
-            3. Why it's good (short description)
-            4. A specific recommended dish.
+            Output Format:
+            Provide a Markdown Table with these columns:
+            | Restaurant Name | Price | Rating (Estimate) | Best Dish to Order | Why it's good |
             
-            Format the response nicely in Markdown. Use a table if possible for better readability.
             """
             
-            with st.spinner(f"Finding top 20 {cuisine} spots in {location}... this might take a moment..."):
+            with st.spinner(f"Hunting for the best {food_search} in {location}..."):
                 response = model.generate_content(prompt)
                 
             # Show results
-            st.markdown("---")
-            st.markdown(response.text)
+            if response.text:
+                st.markdown("### Top Recommendations")
+                st.markdown(response.text)
+                st.caption(f"Note: Results are generated by AI based on popular ratings in {location}.")
+            else:
+                st.error("No response generated. Please try again.")
             
         except Exception as e:
-            st.error(f"An error occurred: {e}")
-
-
+            st.error(f"An error occurred. Check your API Key or Connection. Error: {e}")
 
 
